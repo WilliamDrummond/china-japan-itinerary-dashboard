@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>China + Japan Itinerary Dashboard</title>
+  <meta name="description" content="A living dashboard for planning a China and Japan trip: Beijing, Shanghai, Suzhou, Tokyo, Kyoto, and Osaka." />
+  <style>
+    :root {
+      --bg: #f6f1e8;
+      --paper: #fffaf0;
+      --ink: #211b16;
+      --muted: #71665c;
+      --line: #e0d2c0;
+      --accent: #c9362c;
+      --accent-2: #1f6f72;
+      --accent-3: #d99723;
+      --china: #c9362c;
+      --japan: #1f6f72;
+      --maybe: #926b25;
+      --shadow: 0 18px 45px rgba(47, 35, 23, .10);
+      --radius: 22px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 12% 6%, rgba(201, 54, 44, .12), transparent 32rem),
+        radial-gradient(circle at 84% 18%, rgba(31, 111, 114, .12), transparent 30rem),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    a { color: inherit; }
+
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 26px 0 54px;
+    }
+
+    header.hero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .hero-card, .panel, .day-card, .decision-card {
+      background: rgba(255, 250, 240, .86);
+      border: 1px solid rgba(224, 210, 192, .9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-card { padding: clamp(24px, 4vw, 46px); }
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 750;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); box-shadow: 16px 0 0 var(--accent-2), 32px 0 0 var(--accent-3); margin-right: 34px; }
+    h1 {
+      margin: 16px 0 14px;
+      font-size: clamp(38px, 7vw, 78px);
+      line-height: .94;
+      letter-spacing: -.06em;
+      text-wrap: balance;
+    }
+    .lede {
+      max-width: 65ch;
+      color: #51473e;
+      font-size: clamp(16px, 2vw, 20px);
+      margin: 0;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      text-decoration: none;
+      font-weight: 760;
+      background: #fff7e8;
+      color: var(--ink);
+    }
+    .btn.primary { background: var(--ink); color: #fffaf0; border-color: var(--ink); }
+
+    .summary-panel {
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+    }
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,.38);
+    }
+    .stat strong { display: block; font-size: 30px; line-height: 1; letter-spacing: -.04em; }
+    .stat span { display: block; margin-top: 7px; color: var(--muted); font-weight: 700; font-size: 13px; }
+
+    nav.tabs {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      gap: 8px;
+      padding: 10px 0 14px;
+      margin-bottom: 8px;
+      background: linear-gradient(to bottom, var(--bg), rgba(246, 241, 232, .85));
+      backdrop-filter: blur(10px);
+      overflow-x: auto;
+    }
+    nav.tabs a {
+      white-space: nowrap;
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: rgba(255, 250, 240, .82);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 760;
+      color: #493f36;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    section { margin-top: 26px; scroll-margin-top: 82px; }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+    h2 { margin: 0; font-size: clamp(25px, 3vw, 38px); letter-spacing: -.04em; }
+    .section-note { margin: 0; color: var(--muted); max-width: 56ch; }
+
+    .timeline {
+      display: grid;
+      gap: 13px;
+    }
+    .day-card {
+      display: grid;
+      grid-template-columns: 90px 1fr auto;
+      gap: 18px;
+      align-items: start;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .day-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 6px;
+      background: var(--accent-2);
+    }
+    .day-card.china::before { background: var(--china); }
+    .day-card.japan::before { background: var(--japan); }
+    .day-num {
+      font-weight: 900;
+      letter-spacing: -.05em;
+      font-size: 28px;
+    }
+    .day-num span { display: block; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .day-main h3 { margin: 0 0 5px; font-size: 21px; letter-spacing: -.02em; }
+    .day-main p { margin: 0 0 10px; color: #51473e; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+      color: #4d443c;
+      background: rgba(255,255,255,.42);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .badge {
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 850;
+      background: #f4e0db;
+      color: #7f211b;
+      white-space: nowrap;
+    }
+    .badge.flex { background: #efe4cf; color: #6f4f16; }
+    .badge.book { background: #dcecea; color: #115e62; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .decision-card, .panel { padding: 18px; }
+    .decision-card h3, .panel h3 { margin: 0 0 8px; font-size: 19px; letter-spacing: -.02em; }
+    .decision-card p, .panel p { margin: 0; color: #554b42; }
+    .decision-card ul, .panel ul { margin: 10px 0 0; padding-left: 18px; color: #554b42; }
+    .decision-card li + li, .panel li + li { margin-top: 6px; }
+
+    .park-verdict {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 14px;
+    }
+    .ranked {
+      counter-reset: rank;
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .ranked li {
+      counter-increment: rank;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 13px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.38);
+    }
+    .ranked li::before {
+      content: counter(rank);
+      width: 34px; height: 34px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      background: var(--ink);
+      color: #fffaf0;
+      font-weight: 900;
+    }
+    .ranked strong { display: block; }
+    .ranked span { display: block; color: var(--muted); font-size: 13px; margin-top: 3px; }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 860px) {
+      header.hero, .park-verdict, .notes { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+      .day-card { grid-template-columns: 1fr; gap: 10px; }
+      .badge { justify-self: start; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 520px) {
+      .shell { width: min(100vw - 20px, 1180px); padding-top: 14px; }
+      .hero-card, .summary-panel, .day-card, .panel, .decision-card { border-radius: 18px; }
+      .stats { grid-template-columns: 1fr; }
+      h1 { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="hero-card">
+        <div class="eyebrow"><span class="dot"></span>Living trip board · China + Japan</div>
+        <h1>Two weeks, two countries, three park decisions.</h1>
+        <p class="lede">A shared planning dashboard for the itinerary we’re building: Beijing, Shanghai, Suzhou, Tokyo, Kyoto and Osaka — with the park-heavy bits kept intentional rather than exhausting.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#timeline">View itinerary</a>
+          <a class="btn" href="#decisions">Open decisions</a>
+          <a class="btn" href="#parks">Theme park verdict</a>
+        </div>
+      </div>
+      <aside class="summary-panel">
+        <div class="status-line"><span>Draft v1</span><span id="updated">Updated today</span></div>
+        <div class="stats">
+          <div class="stat"><strong>14</strong><span>days sketched</span></div>
+          <div class="stat"><strong>6</strong><span>main cities/areas</span></div>
+          <div class="stat"><strong>2</strong><span>must-do parks</span></div>
+          <div class="stat"><strong>1</strong><span>Japan park max</span></div>
+        </div>
+      </aside>
+    </header>
+
+    <nav class="tabs" aria-label="Dashboard sections">
+      <a href="#timeline">Timeline</a>
+      <a href="#parks">Parks</a>
+      <a href="#decisions">Decisions</a>
+      <a href="#logistics">Logistics</a>
+      <a href="#watchlist">Watchlist</a>
+    </nav>
+
+    <section id="timeline">
+      <div class="section-head">
+        <div>
+          <h2>Draft itinerary</h2>
+          <p class="section-note">Built around Universal Beijing, Shanghai Disneyland, Suzhou, then a Japan week that doesn’t become wall-to-wall queues.</p>
+        </div>
+      </div>
+      <div class="timeline">
+        <article class="day-card china"><div class="day-num"><span>Day</span>1</div><div class="day-main"><h3>Arrive Beijing</h3><p>Keep it light: Sanlitun or Gulou/Houhai dinner, first Peking duck candidate if energy allows.</p><div class="chips"><span class="chip">Sanlitun</span><span class="chip">Hutongs</span><span class="chip">Peking duck</span></div></div><span class="badge flex">Flexible</span></article>
+        <article class="day-card china"><div class="day-num"><span>Day</span>2</div><div class="day-main"><h3>Imperial Beijing</h3><p>Forbidden City, Jingshan Park view, then Qianmen/Dashilar or Wangfujing.</p><div class="chips"><span class="chip">Forbidden City</span><span class="chip">Jingshan</span><span class="chip">Book ahead</span></div></div><span class="badge book">Needs booking</span></article>
+        <article class="day-card china"><div class="day-num"><span>Day</span>3</div><div class="day-main"><h3>Universal Studios Beijing</h3><p>Jurassic World is the headline, but add Transformers, Harry Potter, Kung Fu Panda and WaterWorld.</p><div class="chips"><span class="chip">Jurassic World Adventure</span><span class="chip">Decepticoaster</span><span class="chip">Harry Potter</span><span class="chip">Kung Fu Panda</span></div></div><span class="badge">Park day</span></article>
+        <article class="day-card china"><div class="day-num"><span>Day</span>4</div><div class="day-main"><h3>Great Wall → Shanghai</h3><p>Mutianyu Great Wall early, then high-speed rail or flight to Shanghai.</p><div class="chips"><span class="chip">Mutianyu</span><span class="chip">High-speed rail</span><span class="chip">Transit day</span></div></div><span class="badge flex">Busy</span></article>
+        <article class="day-card china"><div class="day-num"><span>Day</span>5</div><div class="day-main"><h3>Shanghai first look</h3><p>Yu Garden, French Concession streets, then The Bund skyline at night.</p><div class="chips"><span class="chip">Yuyuan</span><span class="chip">Anfu/Wukang Road</span><span class="chip">The Bund</span></div></div><span class="badge flex">City day</span></article>
+        <article class="day-card china"><div class="day-num"><span>Day</span>6</div><div class="day-main"><h3>Shanghai Disneyland</h3><p>Must-do park. Prioritise Zootopia, Pirates, TRON, Soaring and the major night show.</p><div class="chips"><span class="chip">Zootopia</span><span class="chip">Pirates</span><span class="chip">TRON</span><span class="chip">Premier Access?</span></div></div><span class="badge">Must-do</span></article>
+        <article class="day-card china"><div class="day-num"><span>Day</span>7</div><div class="day-main"><h3>Suzhou day trip</h3><p>Humble Administrator’s Garden, Suzhou Museum, Pingjiang Road, maybe Shantang Street.</p><div class="chips"><span class="chip">Gardens</span><span class="chip">Canals</span><span class="chip">25–40 min train</span></div></div><span class="badge">Day trip</span></article>
+        <article class="day-card china"><div class="day-num"><span>Day</span>8</div><div class="day-main"><h3>Shanghai buffer → Tokyo</h3><p>Nanjing Road, Shanghai Museum or West Bund if time, then fly to Tokyo.</p><div class="chips"><span class="chip">Buffer</span><span class="chip">Shopping</span><span class="chip">Flight</span></div></div><span class="badge flex">Flexible</span></article>
+        <article class="day-card japan"><div class="day-num"><span>Day</span>9</div><div class="day-main"><h3>Classic Tokyo</h3><p>Asakusa, Ueno/Ameyoko, Kappabashi or Akihabara depending on interests.</p><div class="chips"><span class="chip">Senso-ji</span><span class="chip">Ueno</span><span class="chip">Akihabara</span></div></div><span class="badge flex">City day</span></article>
+        <article class="day-card japan"><div class="day-num"><span>Day</span>10</div><div class="day-main"><h3>Modern Tokyo</h3><p>teamLab, Shibuya Sky, Harajuku/Omotesando/Cat Street, newer Harakado.</p><div class="chips"><span class="chip">teamLab</span><span class="chip">Shibuya Sky</span><span class="chip">Harajuku</span></div></div><span class="badge book">Book ahead</span></article>
+        <article class="day-card japan"><div class="day-num"><span>Day</span>11</div><div class="day-main"><h3>Tokyo choice day</h3><p>Either Tokyo DisneySea for uniqueness/Fantasy Springs, or a calmer shopping/food day.</p><div class="chips"><span class="chip">DisneySea?</span><span class="chip">Shimokitazawa</span><span class="chip">Tsukiji/Toyosu</span></div></div><span class="badge flex">Decision</span></article>
+        <article class="day-card japan"><div class="day-num"><span>Day</span>12</div><div class="day-main"><h3>Tokyo → Kyoto</h3><p>Shinkansen to Kyoto, then Gion, Yasaka Shrine and Pontocho dinner.</p><div class="chips"><span class="chip">Shinkansen</span><span class="chip">Gion</span><span class="chip">Pontocho</span></div></div><span class="badge flex">Transfer</span></article>
+        <article class="day-card japan"><div class="day-num"><span>Day</span>13</div><div class="day-main"><h3>Kyoto highlights</h3><p>Choose classic old streets/Kiyomizu or early Fushimi Inari plus Arashiyama.</p><div class="chips"><span class="chip">Kiyomizu</span><span class="chip">Fushimi Inari</span><span class="chip">Arashiyama</span></div></div><span class="badge flex">Choose route</span></article>
+        <article class="day-card japan"><div class="day-num"><span>Day</span>14</div><div class="day-main"><h3>Osaka food + departure</h3><p>Dotonbori/Namba, Shinsekai, Umeda/Grand Green Osaka, then fly from Kansai if possible.</p><div class="chips"><span class="chip">Dotonbori</span><span class="chip">Namba</span><span class="chip">Kansai airport</span></div></div><span class="badge flex">Final day</span></article>
+      </div>
+    </section>
+
+    <section id="parks">
+      <div class="section-head"><div><h2>Theme park verdict</h2><p class="section-note">Current working view after the Universal Beijing question.</p></div></div>
+      <div class="park-verdict">
+        <div class="panel">
+          <h3>Universal Beijing: is Jurassic the only draw?</h3>
+          <p>No — but Jurassic World Adventure is the clearest unique headline. The park is best if Beijing itself is part of the trip, not if you’re flying there only for one ride.</p>
+          <ul>
+            <li><strong>Also worth noting:</strong> Transformers Metrobase + Decepticoaster, Harry Potter, Kung Fu Panda indoor land, WaterWorld.</li>
+            <li><strong>Current leaning:</strong> keep Beijing if Forbidden City + Great Wall are exciting too.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Park priority ranking</h3>
+          <ol class="ranked">
+            <li><div><strong>Shanghai Disneyland</strong><span>Locked: Zootopia, Pirates, TRON make this a must-do.</span></div></li>
+            <li><div><strong>Tokyo DisneySea</strong><span>Most unique Japan park; Fantasy Springs is the big current draw.</span></div></li>
+            <li><div><strong>Universal Studios Japan</strong><span>Worth it if Nintendo/Donkey Kong is a priority.</span></div></li>
+            <li><div><strong>Universal Studios Beijing</strong><span>Good with Beijing sightseeing; weaker as a standalone reason.</span></div></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="decisions">
+      <div class="section-head"><div><h2>Open decisions</h2><p class="section-note">The bits to lock next as the plan gets sharper.</p></div></div>
+      <div class="grid-3">
+        <article class="decision-card"><h3>1. Keep Beijing?</h3><p>Decision hinges on whether Forbidden City + Great Wall + Peking duck make Beijing worth the extra flight/train logistics, not just Universal.</p></article>
+        <article class="decision-card"><h3>2. Japan park choice</h3><p>Pick one max: Tokyo DisneySea for uniqueness, or USJ for Nintendo. Skip both if you want a more cultural Japan week.</p></article>
+        <article class="decision-card"><h3>3. Trip dates</h3><p>Dates will affect Chinese holidays, Japan crowds, park opening hours, weather, and whether Express/Premier Access is sensible.</p></article>
+      </div>
+    </section>
+
+    <section id="logistics">
+      <div class="section-head"><div><h2>Logistics checklist</h2><p class="section-note">Not final advice yet — just the high-impact planning reminders.</p></div></div>
+      <div class="notes">
+        <div class="panel"><h3>China setup</h3><ul><li>Check visa / visa-free transit eligibility before booking.</li><li>Set up Alipay and/or WeChat Pay with an international card.</li><li>Use Apple Maps, Amap/Gaode or Baidu; Google Maps is unreliable in mainland China.</li><li>Book major attractions with passport details where required.</li></ul></div>
+        <div class="panel"><h3>Japan setup</h3><ul><li>Add Suica/PASMO/ICOCA to Apple Wallet if supported.</li><li>JR Pass likely not worth it for simple Tokyo → Kyoto/Osaka routing.</li><li>Book teamLab, Shibuya Sky, DisneySea/USJ ahead if chosen.</li><li>Use luggage forwarding between Tokyo and Kyoto/Osaka.</li></ul></div>
+      </div>
+    </section>
+
+    <section id="watchlist">
+      <div class="section-head"><div><h2>Watchlist</h2><p class="section-note">Things I’ll keep updating as we refine the trip.</p></div></div>
+      <div class="grid-3">
+        <article class="decision-card"><h3>Dates + crowd calendars</h3><p>Once dates are known, flag public holidays, school breaks, weekend park risk and booking windows.</p></article>
+        <article class="decision-card"><h3>Flights + routing</h3><p>Best case: open-jaw routing into Beijing, across to Shanghai, into Tokyo, home from Osaka/Kansai.</p></article>
+        <article class="decision-card"><h3>Hotels by vibe</h3><p>Shortlist areas: Beijing Sanlitun/Gulou/Wangfujing, Shanghai French Concession/Bund, Tokyo Shinjuku/Shibuya/Ginza, Kyoto Gion/Kawaramachi.</p></article>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>China + Japan itinerary dashboard · maintained from our planning chat</span>
+      <span>No exact dates or private booking details added yet.</span>
+    </div>
+  </main>
+
+  <script>
+    const date = new Date();
+    const fmt = new Intl.DateTimeFormat('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+    document.getElementById('updated').textContent = `Updated ${fmt.format(date)}`;
+  </script>
+</body>
+</html>
